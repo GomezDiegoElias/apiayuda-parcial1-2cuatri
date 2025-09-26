@@ -1,0 +1,42 @@
+@url = http://localhost:5006
+
+GET {{url}}/weatherforecast/
+Accept: application/json
+
+###
+
+GET {{url}}/api/persons/first
+Accept: application/json
+
+###
+
+POST {{url}}/api/persons
+Content-Type: application/json
+
+{
+    "dni": 46924236,
+    "firstname": "Diego",
+    "lastname": "Gomez"
+}
+
+###
+
+GET {{url}}/api/persons
+Accept: application/json
+
+###
+
+GET {{url}}/api/persons/46924236
+Accept: application/json
+
+###
+
+GET {{url}}/api/persons/count
+Accept: application/json
+
+###
+
+DELETE {{url}}/api/persons/46924236
+Accept: application/json
+
+###
