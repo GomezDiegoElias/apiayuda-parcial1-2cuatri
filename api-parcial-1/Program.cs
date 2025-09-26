@@ -138,11 +138,13 @@ app.MapPost("api/persons", async (
 
 });
 
-app.MapGet("/api/persons", async (AppDbContext context) =>
+app.MapGet("/api/persons", async (AppDbContext context, ILogger<Program> logger) =>
 {
     
     // trae la entidad y la mapea a dto de respuesta
     var persons = await context.Persons.Select(p => PersonMapper.ToResponse(p)).ToListAsync();
+
+    logger.LogInformation("Personas listadas correctamente");
 
     // verifica que se incrementa el id
     //var personsEntity = await context.Persons.ToListAsync(); // trae la entidad directamente
@@ -155,19 +157,21 @@ app.MapGet("/api/persons", async (AppDbContext context) =>
 
 });
 
-app.MapGet("/api/persons/count", async (AppDbContext context) =>
+app.MapGet("/api/persons/count", async (AppDbContext context, ILogger<Program> logger) =>
 {
     var cantidad = await context.Persons.CountAsync();
+    logger.LogInformation("Cantidad total de personas {cantodad}", cantidad);
     return Results.Ok($"Cantidad: {cantidad}");
 });
 
-app.MapGet("/api/persons/{dni:long}", async (AppDbContext context, long dni) =>
+app.MapGet("/api/persons/{dni:long}", async (AppDbContext context, ILogger<Program> logger, long dni) =>
 {
     
     var person = await context.Persons.FirstOrDefaultAsync(p => p.Dni == dni);
 
     if (person == null)
     {
+        logger.LogError("Error al buscar persona con dni: {dni}", dni);
         return Results.NotFound(new 
         { 
             Message = "Ah ocurrido un error",
@@ -175,17 +179,19 @@ app.MapGet("/api/persons/{dni:long}", async (AppDbContext context, long dni) =>
         });
     }
 
+    logger.LogInformation("Persona obtenida exitosamente {nombre}", person.FirstName);
     return Results.Ok(PersonMapper.ToResponse(person));
 
 });
 
-app.MapDelete("/api/persons/{dni:long}", async (AppDbContext context, long dni) =>
+app.MapDelete("/api/persons/{dni:long}", async (AppDbContext context, ILogger<Program> logger, long dni) =>
 {
 
     var personExisting = await context.Persons.FirstOrDefaultAsync(p => p.Dni == dni);
 
     if (personExisting == null)
     {
+        logger.LogError("Error al eliminar persona con DNI '{dni}'", dni);
         return Results.NotFound(new
         {
             Message = "Ah ocurrido un error",
@@ -196,6 +202,7 @@ app.MapDelete("/api/persons/{dni:long}", async (AppDbContext context, long dni) 
     context.Persons.Remove(personExisting);
     await context.SaveChangesAsync();
 
+    logger.LogInformation("Persona '{persona}' eliminado con exito", personExisting.FirstName);
     return Results.Ok($"Persona con DNI '{dni}' eliminado correctamente");
 
 });

@@ -19,8 +19,8 @@ POST {{url}}/api/persons
 Content-Type: application/json
 
 {
-    "dni": 46924236,
-    "firstname": "Diego",
+    "dni": 29626101,
+    "firstname": "Ramon",
     "lastname": "Gomez"
 }
 
