@@ -5,6 +5,7 @@ using api_parcial_1.Mapper;
 using api_parcial_1.Validation;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,13 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseInMemoryDataba
 
 // registro de validaciones
 builder.Services.AddValidatorsFromAssemblyContaining<PersonValidation>();
+
+// serilog
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .WriteTo.File("logs/log-app01-.log", rollingInterval: RollingInterval.Day)
+    .WriteTo.Console());
 
 var app = builder.Build();
 
@@ -90,7 +98,20 @@ app.UseHttpsRedirection();
 
 // ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-app.MapPost("api/persons", async (AppDbContext context, PersonDto requets, IValidator<PersonDto> validator) =>
+app.MapGet("/log", (ILogger<Program> logger) =>
+{
+    logger.LogInformation("LOG DE INFORMACION");
+    logger.LogError("LOG DE ERROR");
+    logger.LogWarning("LOG DE ADVERTENCIA");
+    return Results.Ok("Hola Mundo");
+});
+
+app.MapPost("api/persons", async (
+    AppDbContext context, 
+    PersonDto requets, 
+    IValidator<PersonDto> validator,
+    ILogger<Program> logger
+) =>
 {
 
     // validacion
@@ -108,7 +129,8 @@ app.MapPost("api/persons", async (AppDbContext context, PersonDto requets, IVali
     context.SaveChanges();
 
     // usar serilog
-    Console.WriteLine($"Persona creada: ${savePerson.ToString()}");
+    //Console.WriteLine($"Persona creada: ${savePerson.ToString()}");
+    logger.LogInformation("Persona creada: {persona}", savePerson.ToString());
 
     var response = PersonMapper.ToResponse(savePerson);
 

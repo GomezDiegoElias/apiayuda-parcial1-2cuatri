@@ -10,6 +10,11 @@ Accept: application/json
 
 ###
 
+GET {{url}}/log
+Accept: application/json
+
+###
+
 POST {{url}}/api/persons
 Content-Type: application/json
 
